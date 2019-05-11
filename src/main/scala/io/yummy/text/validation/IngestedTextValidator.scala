@@ -9,10 +9,14 @@ import cats.implicits._
 case class IngestedTextValidator() extends Validator[IngestedText] {
 
   override def validate(value: IngestedText): ValidationResult[IngestedText] =
-    if (value.value.length > 10000000)
+    if (value.value.length > 10000000) {
       Invalid(NonEmptyChain.one(IngestedFileTooLong))
-    else if (value.value.length === 0)
+    } else if (value.value.length === 0) {
       Invalid(NonEmptyChain.one(IngestedFileIsEmpty))
-    else
-      Valid(value)
+    } else {
+      val cleanedText = value.value
+        .replaceAll("(\r\n)|\r|\n|\\.|\\,|\\?|\\!|“|”|\\)|\\(", "")
+        .toLowerCase
+      Valid(IngestedText(cleanedText))
+    }
 }
