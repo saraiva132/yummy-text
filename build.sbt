@@ -27,25 +27,28 @@ lazy val library =
       val fs2        = "1.0.4"
       val circe      = "0.11.1"
       val logback    = "1.2.3"
+      val logCats    = "0.3.0"
       val scalaTest  = "3.0.5"
+      val slf4j      = "1.7.25"
     }
 
     val CommonDependencies = Seq(
-      "org.typelevel"  %% "cats-core"            % Version.cats,
-      "org.typelevel"  %% "cats-effect"          % Version.catsEffect,
-      "org.http4s"     %% "http4s-dsl"           % Version.http4s,
-      "org.http4s"     %% "http4s-blaze-server"  % Version.http4s,
-      "org.http4s"     %% "http4s-blaze-client"  % Version.http4s,
-      "org.http4s"     %% "http4s-circe"         % Version.http4s,
-      "io.circe"       %% "circe-parser"         % Version.circe,
-      "io.circe"       %% "circe-literal"        % Version.circe,
-      "io.circe"       %% "circe-generic"        % Version.circe,
-      "io.circe"       %% "circe-generic-extras" % Version.circe,
-      "io.circe"       %% "circe-java8"          % Version.circe,
-      "co.fs2"         %% "fs2-core"             % Version.fs2,
-      "co.fs2"         %% "fs2-io"               % Version.fs2,
-      "ch.qos.logback" % "logback-classic"       % Version.logback,
-      "org.scalatest"  %% "scalatest"            % Version.scalaTest % "test, it",
+      "org.typelevel"     %% "cats-core"            % Version.cats,
+      "org.typelevel"     %% "cats-effect"          % Version.catsEffect,
+      "org.http4s"        %% "http4s-dsl"           % Version.http4s,
+      "org.http4s"        %% "http4s-blaze-server"  % Version.http4s,
+      "org.http4s"        %% "http4s-blaze-client"  % Version.http4s,
+      "org.http4s"        %% "http4s-circe"         % Version.http4s,
+      "io.circe"          %% "circe-parser"         % Version.circe,
+      "io.circe"          %% "circe-literal"        % Version.circe,
+      "io.circe"          %% "circe-generic"        % Version.circe,
+      "io.circe"          %% "circe-generic-extras" % Version.circe,
+      "io.circe"          %% "circe-java8"          % Version.circe,
+      "co.fs2"            %% "fs2-core"             % Version.fs2,
+      "co.fs2"            %% "fs2-io"               % Version.fs2,
+      "io.chrisdavenport" %% "log4cats-slf4j"       % Version.logCats,
+      "org.slf4j"         % "slf4j-simple"          % Version.slf4j,
+      "org.scalatest"     %% "scalatest"            % Version.scalaTest % "test, it",
     )
   }
 
@@ -104,5 +107,3 @@ lazy val commonSettings =
     ),
     addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.4")
   )
-
-scalafmtOnCompile := true
