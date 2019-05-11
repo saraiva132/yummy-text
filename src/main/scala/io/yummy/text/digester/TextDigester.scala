@@ -2,15 +2,17 @@ package io.yummy.text.digester
 
 import cats.effect.IO
 import io.yummy.text.model.{DigestedText, IngestedText}
-import cats.implicits._
 
 object TextDigester {
 
   def digest(text: IngestedText): IO[DigestedText] = IO {
-    val words = text.value.split(" ").filterNot(_ === "")
+    val words = text.value
+      .filter(r => r.isLetter || r.isSpaceChar)
+      .toLowerCase
+      .split(" ")
 
     val occurrences = words
-      .groupBy(str => str)
+      .groupBy(identity)
       .map {
         case (key, value) =>
           (key, value.length)

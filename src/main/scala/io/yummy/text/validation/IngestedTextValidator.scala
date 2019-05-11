@@ -14,9 +14,6 @@ case class IngestedTextValidator() extends Validator[IngestedText] {
     } else if (value.value.length === 0) {
       Invalid(NonEmptyChain.one(IngestedFileIsEmpty))
     } else {
-      val cleanedText = value.value
-        .replaceAll("(\r\n)|\r|\n|\\.|\\,|\\?|\\!|“|”|\\)|\\(", "")
-        .toLowerCase
-      Valid(IngestedText(cleanedText))
+      Valid(value)
     }
 }

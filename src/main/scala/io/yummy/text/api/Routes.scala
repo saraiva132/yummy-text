@@ -36,7 +36,7 @@ object Routes extends Http4sDsl[IO] {
       }
     }
 
-  def searchForFile(multiPart: Multipart[IO]): Either[Error, Stream[IO, String]] =
+  private def searchForFile(multiPart: Multipart[IO]): Either[Error, Stream[IO, String]] =
     multiPart.parts.find(_.name.map(_ === fileHeaderName).getOrElse(false)) match {
       case Some(part) =>
         Right(
@@ -47,14 +47,14 @@ object Routes extends Http4sDsl[IO] {
         Left(TextFileNotFound)
     }
 
-  def digestTextStream(stream: Stream[IO, String]): IO[Response[IO]] =
+  private def digestTextStream(stream: Stream[IO, String]): IO[Response[IO]] =
     for {
       file     <- stream.compile.toVector
       text     <- IO.pure(IngestedText(file.mkString("")))
       response <- withValidation[IO, IngestedText](text)(digestText)
     } yield response
 
-  def digestText(text: IngestedText): IO[Response[IO]] =
+  private def digestText(text: IngestedText): IO[Response[IO]] =
     for {
       digested <- TextDigester.digest(text)
       response <- Ok(digested.asJson)
