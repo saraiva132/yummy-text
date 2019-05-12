@@ -1,7 +1,7 @@
 package io.yummy.text.api
 
-import cats.data.EitherT
 import cats.effect.IO
+import cats.implicits._
 import io.yummy.text.Common._
 import io.yummy.text.digester.TextDigester
 import io.yummy.text.error._
@@ -31,7 +31,7 @@ class RoutesSpec extends FlatSpec with Matchers with MockitoSugar {
       .thenReturn(IO.pure(digested))
 
     when(validatorMock.validate(any[String]))
-      .thenReturn(EitherT.pure[IO, Error](text))
+      .thenReturn(text.asRight)
 
     val request  = buildMultiPartRequest(text.value, uri)
     val response = routes.run(request).value.unsafeRunSync().get
@@ -44,9 +44,7 @@ class RoutesSpec extends FlatSpec with Matchers with MockitoSugar {
 
   it should "not allow empty files" in {
 
-    val error: EitherT[IO, Error, IngestedText] = EitherT.leftT(IngestedFileIsEmpty)
-
-    when(validatorMock.validate(any[String])).thenReturn(error)
+    when(validatorMock.validate(any[String])).thenReturn(IngestedFileIsEmpty.asLeft)
 
     val request  = buildMultiPartRequest(emptyText.value, uri)
     val response = routes.run(request).value.unsafeRunSync().get
@@ -56,9 +54,7 @@ class RoutesSpec extends FlatSpec with Matchers with MockitoSugar {
 
   it should "not allow files bigger than allowed size" in {
 
-    val error: EitherT[IO, Error, IngestedText] = EitherT.leftT(IngestedFileTooLong)
-
-    when(validatorMock.validate(any[String])).thenReturn(error)
+    when(validatorMock.validate(any[String])).thenReturn(IngestedFileTooLong.asLeft)
 
     val request  = buildMultiPartRequest(hugeText.value, uri)
     val response = routes.run(request).value.unsafeRunSync().get
@@ -95,7 +91,7 @@ class RoutesSpec extends FlatSpec with Matchers with MockitoSugar {
   "POST /upload" should "return internal server error if something unexpected occurs" in {
 
     when(validatorMock.validate(any[String]))
-      .thenReturn(EitherT.pure[IO, Error](text))
+      .thenReturn(text.asRight)
 
     when(textDigesterMock.digest(any[IngestedText]))
       .thenReturn(IO.raiseError(new Exception))

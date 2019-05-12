@@ -1,7 +1,5 @@
 package io.yummy.text.validation
 
-import cats.data.EitherT
-import cats.effect.IO
 import io.yummy.text.model.IngestedText
 import io.yummy.text.error._
 import cats.implicits._
@@ -16,13 +14,10 @@ case class Validator(config: DigesterConfig) {
       _ <- Either.cond(value.value.length =!= 0, v, IngestedFileIsEmpty)
     } yield v
 
-  def validate(input: String): ValidationResultT[IngestedText] = {
-    val s = for {
-      text     <- IO.pure(IngestedText(input))
-      response <- IO(validateIngestedText(text))
+  def validate(input: String): ValidationResult[IngestedText] =
+    for {
+      text     <- IngestedText(input).asRight
+      response <- validateIngestedText(text)
     } yield response
-
-    EitherT(s)
-  }
 
 }

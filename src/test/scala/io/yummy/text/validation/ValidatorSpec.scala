@@ -10,15 +10,15 @@ class ValidatorSpec extends FlatSpec with Matchers with Http4sDsl[IO] {
   val validator = Validator(config.digester)
 
   it should "validate correct text" in {
-    validator.validate(text.value).value.unsafeRunSync().right.get shouldBe text
+    validator.validate(text.value).right.get shouldBe text
   }
 
   it should "validate return error if file is empty" in {
-    validator.validate(emptyText.value).value.unsafeRunSync().left.get shouldBe IngestedFileIsEmpty
+    validator.validate(emptyText.value).left.get shouldBe IngestedFileIsEmpty
   }
 
   it should "validate return error if file is too big" in {
-    validator.validate(hugeText.value).value.unsafeRunSync().left.get shouldBe IngestedFileTooLong
+    validator.validate(hugeText.value).left.get shouldBe IngestedFileTooLong
   }
 
 }
