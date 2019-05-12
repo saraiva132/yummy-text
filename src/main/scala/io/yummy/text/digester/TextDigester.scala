@@ -10,6 +10,7 @@ object TextDigester {
       .filter(r => r.isLetter || r.isSpaceChar)
       .toLowerCase
       .split(" ")
+      .filterNot(_.isEmpty)
 
     val occurrences = words
       .groupBy(identity)

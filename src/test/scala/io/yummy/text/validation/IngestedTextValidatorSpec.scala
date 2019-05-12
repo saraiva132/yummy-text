@@ -12,7 +12,7 @@ import io.yummy.text.Common._
 class IngestedTextValidatorSpec extends FlatSpec with Matchers with Http4sDsl[IO] {
 
   implicit val stringListDecoder = jsonOf[IO, List[String]]
-  implicit val validator         = IngestedTextValidator()
+  val validator                  = Validator()
 
   it should "validate correct text" in {
     withValidation[IO, IngestedText](text)(_ => Ok()).unsafeRunSync().status shouldBe Status.Ok

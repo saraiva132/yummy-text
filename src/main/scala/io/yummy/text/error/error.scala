@@ -10,4 +10,8 @@ object Error {
 
 final case object IngestedFileIsEmpty extends Error("Ingested file should not be empty.")
 final case object IngestedFileTooLong extends Error("Ingested file length is too big. Maximum size is 10 mb.")
-final case object TextFileNotFound extends Error("Text file was not found. Please use multi-part header named file.")
+final case object TextFileNotFound    extends Error("Text file was not found. Please use multi-part header named file.")
+final case object RequestTooLong
+    extends Error(
+      "The multi-part request is too big. Maximum size is 10 mb. Please look at your headers."
+    )

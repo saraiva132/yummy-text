@@ -3,6 +3,7 @@ package io.yummy.text
 import cats.effect.{ExitCode, IO, IOApp}
 import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
 import io.yummy.text.api.Routes
+import io.yummy.text.validation.Validator
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.implicits._
 
@@ -13,8 +14,9 @@ object Main extends IOApp {
 
   def run(args: List[String]): IO[ExitCode] =
     for {
-      routes <- IO(Routes())
-      _      <- BlazeServerBuilder[IO]
+      validator  <- IO(Validator())
+      routes     <- IO(Routes(validator))
+      _          <- BlazeServerBuilder[IO]
         .bindHttp(port = 8080, host = "0.0.0.0")
         .withHttpApp(routes.orNotFound)
         .serve
