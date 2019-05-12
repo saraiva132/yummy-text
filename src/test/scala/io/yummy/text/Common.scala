@@ -1,11 +1,34 @@
 package io.yummy.text
 
-import io.yummy.text.model.IngestedText
+import cats.effect.IO
+import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
+import io.yummy.text.model.{DigestedText, IngestedText}
+import fs2.Chunk
+import fs2.Stream
+import org.http4s.{Header, Headers, Method, Request, Uri}
+import org.http4s.multipart.{Multipart, Part}
 
 object Common {
-  val file         = scala.io.Source.fromResource("file.txt").mkString
-  val text         = IngestedText("this this is is is file words")
-  val pollutedText = IngestedText(",.th§.,.,.is.!\" §<>|%‹^th,+=is$ #is *&&is (is)` {}file[~ ?\'words.")
-  val emptyText    = IngestedText("")
-  val hugeText     = IngestedText(file)
+  implicit val logger = Slf4jLogger.getLoggerFromName[IO]("yummy-text-test")
+  val config          = Config.apply.unsafeRunSync()
+  val file            = scala.io.Source.fromResource("file.txt").mkString
+  val text            = IngestedText("this this is is is file words")
+  val pollutedText    = IngestedText(",.th§.,.,.is.!\" §<>|%‹^th,+=is$ #is *&&is (is)` {}file[~ ?\'words.")
+  val emptyText       = IngestedText("")
+  val hugeText        = IngestedText(file)
+  val digested        = DigestedText(7, Map("this" -> 2, "is" -> 3, "file" -> 1, "words" -> 1))
+
+  def buildMultiPart(text: String): Multipart[IO] = {
+    val stream = Stream.chunk(Chunk.bytes(text.getBytes()))
+    val part   = Part[IO](Headers.of(Header("name", "file"), Header("file", "")), stream)
+    Multipart[IO](Vector(part))
+  }
+
+  def buildMultiPartRequest(text: String, uri: Uri): Request[IO] = {
+    val multipart = buildMultiPart(text)
+    Request[IO](Method.POST, uri)
+      .withHeaders(multipart.headers)
+      .withEntity(multipart)
+  }
+
 }

@@ -7,5 +7,4 @@ import io.yummy.text.error._
 package object validation {
   type ValidationResult[A] = Either[Error, A]
   type ValidationResultT[A] = EitherT[IO, Error, A]
-
 }

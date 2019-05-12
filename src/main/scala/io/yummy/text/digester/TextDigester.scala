@@ -3,7 +3,7 @@ package io.yummy.text.digester
 import cats.effect.IO
 import io.yummy.text.model.{DigestedText, IngestedText}
 
-object TextDigester {
+case class TextDigester() {
 
   def digest(text: IngestedText): IO[DigestedText] = IO {
     val words = text.value
