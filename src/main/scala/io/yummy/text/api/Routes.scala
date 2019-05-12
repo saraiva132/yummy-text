@@ -32,12 +32,14 @@ case class Routes(config: DigesterConfig, validator: Validator, digester: TextDi
             digested <- EitherT.liftF[IO, Error, DigestedText](digester.digest(text))
           } yield digested
 
-          d.value.flatMap {
-            case Right(digested) =>
-              L.debug(s"Digested text file with result $digested.") *> Ok(digested.asJson)
-            case Left(error) =>
-              L.warn(s"Failed to process file with error ${error.getMessage}. ") *> BadRequest(error.asJson)
-          }
+          d.value
+            .flatMap {
+              case Right(digested) =>
+                L.debug(s"Digested text file with result $digested.") *> Ok(digested.asJson)
+              case Left(error) =>
+                L.warn(s"Failed to process file with error ${error.getMessage}. ") *> BadRequest(error.asJson)
+            }
+            .handleErrorWith(_ => InternalServerError("Ops, something went wrong. Try again!"))
         }
       }
     }

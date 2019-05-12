@@ -10,6 +10,7 @@ import org.http4s.multipart.{Multipart, Part}
 import org.http4s.headers._
 
 object Common {
+
   implicit val logger = Slf4jLogger.getLoggerFromName[IO]("yummy-text-test")
   val config          = Config.apply.unsafeRunSync()
   val file            = scala.io.Source.fromResource("file.txt").mkString
@@ -32,5 +33,4 @@ object Common {
       .withHeaders(multipart.headers)
       .withEntity(multipart)
   }
-
 }

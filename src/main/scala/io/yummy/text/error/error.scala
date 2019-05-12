@@ -15,4 +15,4 @@ final case object RequestTooLarge
       "The multi-part request is too big. Maximum size is 10 mb. " +
       "Please make sure your file is being uploaded on header named file."
     )
-final case class TextFileNotFound(name: String) extends Error(s"Text file was not found. Please use multi-part header named $name.")
+final case class TextFileNotFound(name: String) extends Error(s"Text file was not found. Please use multi-part part named $name.")

@@ -45,7 +45,7 @@ class RoutesSpec extends FlatSpec with Matchers with MockitoSugar {
     val request  = buildMultiPartRequest(emptyText.value, uri)
     val response = routes.run(request).value.unsafeRunSync().get
     response.status shouldBe Status.BadRequest
-    response.as[String].unsafeRunSync().rmParenthesis shouldBe IngestedFileIsEmpty.getMessage
+    response.as[String].unsafeRunSync().rmQuotes shouldBe IngestedFileIsEmpty.getMessage
   }
 
   it should "not allow files bigger than allowed size" in {
@@ -56,7 +56,7 @@ class RoutesSpec extends FlatSpec with Matchers with MockitoSugar {
     val request  = buildMultiPartRequest(hugeText.value, uri)
     val response = routes.run(request).value.unsafeRunSync().get
     response.status shouldBe Status.BadRequest
-    response.as[String].unsafeRunSync().rmParenthesis shouldBe IngestedFileTooLong.getMessage
+    response.as[String].unsafeRunSync().rmQuotes shouldBe IngestedFileTooLong.getMessage
   }
 
   it should "inspect content length and reject if too large" in {
@@ -72,7 +72,7 @@ class RoutesSpec extends FlatSpec with Matchers with MockitoSugar {
 
     val response = routes.run(request).value.unsafeRunSync().get
     response.status shouldBe Status.BadRequest
-    response.as[String].unsafeRunSync().rmParenthesis shouldBe RequestTooLarge.getMessage
+    response.as[String].unsafeRunSync().rmQuotes shouldBe RequestTooLarge.getMessage
   }
 
   it should "reject if not able to find file" in {
@@ -88,11 +88,21 @@ class RoutesSpec extends FlatSpec with Matchers with MockitoSugar {
 
     val response = routes.run(request).value.unsafeRunSync().get
     response.status shouldBe Status.BadRequest
-    response.as[String].unsafeRunSync().rmParenthesis shouldBe TextFileNotFound(config.digester.partName).getMessage
+    response.as[String].unsafeRunSync().rmQuotes shouldBe TextFileNotFound(config.digester.partName).getMessage
+  }
+
+  "POST /upload" should "return internal server error if something unexpected occurs" in {
+
+    when(textDigesterMock.digest(any[IngestedText]))
+      .thenReturn(IO.raiseError(new Exception))
+
+    val request  = buildMultiPartRequest(text.value, uri)
+    val response = routes.run(request).value.unsafeRunSync().get
+    response.status shouldBe Status.InternalServerError
   }
 
   implicit class stringOps(str: String) {
-    def rmParenthesis = str.replace("\"", "")
+    def rmQuotes = str.replace("\"", "")
   }
 
 }
