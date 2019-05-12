@@ -10,7 +10,7 @@ case class Config(server: ServerConfig, digester: DigesterConfig)
 
 object Config {
 
-  case class DigesterConfig(headerName: String, fileMaxSize: Long)
+  case class DigesterConfig(partName: String, fileMaxSize: Long)
   case class ServerConfig(host: String, port: Int)
 
   private val basePath = "io.yummy.text"

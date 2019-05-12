@@ -81,14 +81,14 @@ class RoutesSpec extends FlatSpec with Matchers with MockitoSugar {
       .thenReturn(IO.pure(digested))
 
     val part      = Part[IO](Headers.of(Header("badHeader", "badContent")), Stream.empty)
-    val multipart = Multipart[IO](Vector.empty)
+    val multipart = Multipart[IO](Vector(part))
     val request = Request[IO](Method.POST, uri)
       .withHeaders(multipart.headers)
       .withEntity(multipart)
 
     val response = routes.run(request).value.unsafeRunSync().get
     response.status shouldBe Status.BadRequest
-    response.as[String].unsafeRunSync().rmParenthesis shouldBe TextFileNotFound(config.digester.headerName).getMessage
+    response.as[String].unsafeRunSync().rmParenthesis shouldBe TextFileNotFound(config.digester.partName).getMessage
   }
 
   implicit class stringOps(str: String) {

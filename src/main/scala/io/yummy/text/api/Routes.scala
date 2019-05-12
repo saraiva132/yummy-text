@@ -15,7 +15,7 @@ import io.yummy.text.error._
 import fs2.text._
 import fs2.Stream
 import io.yummy.text.Config.DigesterConfig
-import org.http4s.multipart.Multipart
+import org.http4s.multipart.{Multipart, Part}
 
 case class Routes(config: DigesterConfig, validator: Validator, digester: TextDigester)(implicit L: Logger[IO]) extends Http4sDsl[IO] {
 
@@ -42,15 +42,22 @@ case class Routes(config: DigesterConfig, validator: Validator, digester: TextDi
       }
     }
 
-  def searchForFile(multiPart: Multipart[IO]): ValidationResultT[Stream[IO, String]] = EitherT.fromEither {
-    multiPart.parts.find(_.headers.toList.map(h => h.value === config.headerName).exists(identity)) match {
-      case Some(part) =>
-        Right(
-          part.body
-            .through(utf8Decode)
-        )
-      case None =>
-        Left(TextFileNotFound(config.headerName))
+  def searchForFile(multiPart: Multipart[IO]): ValidationResultT[Stream[IO, String]] = {
+
+    def findFileByName(part: Part[IO]): Boolean =
+      part.name.map(_ === config.partName).getOrElse(false)
+
+    EitherT.fromEither {
+      multiPart.parts.find(findFileByName) match {
+        case Some(part) =>
+          Right(
+            part.body
+              .through(utf8Decode)
+          )
+        case None =>
+          Left(TextFileNotFound(config.partName))
+      }
     }
   }
+
 }
