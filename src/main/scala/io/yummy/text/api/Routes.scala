@@ -13,7 +13,6 @@ import io.yummy.text.digester.TextDigester
 import io.yummy.text.model.DigestedText
 import io.yummy.text.error._
 import fs2.text._
-import fs2.Stream
 import io.yummy.text.Config.DigesterConfig
 import org.http4s.multipart.{Multipart, Part}
 
@@ -44,20 +43,24 @@ case class Routes(config: DigesterConfig, validator: Validator, digester: TextDi
       }
     }
 
-  def searchForFile(multiPart: Multipart[IO]): ValidationResultT[Stream[IO, String]] = {
+  def searchForFile(multiPart: Multipart[IO]): ValidationResultT[String] = {
 
     def findFileByName(part: Part[IO]): Boolean =
       part.name.map(_ === config.partName).getOrElse(false)
 
-    EitherT.fromEither {
+    {
       multiPart.parts.find(findFileByName) match {
         case Some(part) =>
-          Right(
+          EitherT.liftF(
             part.body
               .through(utf8Decode)
+              .compile
+              .toVector
+              .map(_.mkString(""))
           )
+
         case None =>
-          Left(TextFileNotFound(config.partName))
+          EitherT.leftT(TextFileNotFound(config.partName))
       }
     }
   }

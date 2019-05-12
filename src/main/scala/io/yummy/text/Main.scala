@@ -7,6 +7,7 @@ import io.yummy.text.digester.TextDigester
 import io.yummy.text.validation.Validator
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.implicits._
+import cats.implicits._
 
 // format: off
 object Main extends IOApp {
@@ -19,11 +20,12 @@ object Main extends IOApp {
       digester   <- IO.pure(TextDigester())
       validator  <- IO.pure(Validator(config.digester))
       api        <- IO(Routes(config.digester, validator, digester))
-      _          <- BlazeServerBuilder[IO]
+      result     <- BlazeServerBuilder[IO]
         .bindHttp(port = config.server.port, host = config.server.host)
         .withHttpApp(api.routes.orNotFound)
         .serve
         .compile
         .drain
-    } yield ExitCode.Success
+        .as(ExitCode.Success)
+    } yield result
 }

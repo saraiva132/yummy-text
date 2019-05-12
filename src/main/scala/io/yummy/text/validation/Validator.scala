@@ -5,7 +5,6 @@ import cats.effect.IO
 import io.yummy.text.model.IngestedText
 import io.yummy.text.error._
 import cats.implicits._
-import fs2.Stream
 import io.yummy.text.Config.DigesterConfig
 
 case class Validator(config: DigesterConfig) {
@@ -17,10 +16,9 @@ case class Validator(config: DigesterConfig) {
       _ <- Either.cond(value.value.length =!= 0, v, IngestedFileIsEmpty)
     } yield v
 
-  def validate(stream: Stream[IO, String]): ValidationResultT[IngestedText] = {
+  def validate(input: String): ValidationResultT[IngestedText] = {
     val s = for {
-      file     <- stream.compile.toVector
-      text     <- IO(IngestedText(file.mkString("")))
+      text     <- IO.pure(IngestedText(input))
       response <- IO(validateIngestedText(text))
     } yield response
 
