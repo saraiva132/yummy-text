@@ -25,7 +25,7 @@ class RoutesSpec extends FlatSpec with Matchers with MockitoSugar {
 
   val routes = Routes(config.digester, validatorMock, textDigesterMock).routes
 
-  "POST /upload" should "return the number of words and occurrences" in {
+  "POST /upload" should "return the number of words and occurrences of each one" in {
 
     when(textDigesterMock.digest(any[IngestedText]))
       .thenReturn(IO.pure(digested))
@@ -42,7 +42,7 @@ class RoutesSpec extends FlatSpec with Matchers with MockitoSugar {
     verify(textDigesterMock).digest(text)
   }
 
-  it should "not allow empty files" in {
+  it should "not allow empty files and return appropriate error message" in {
 
     when(validatorMock.validate(any[String])).thenReturn(IngestedFileIsEmpty.asLeft)
 
@@ -52,7 +52,7 @@ class RoutesSpec extends FlatSpec with Matchers with MockitoSugar {
     response.as[String].unsafeRunSync().rmQuotes shouldBe IngestedFileIsEmpty.getMessage
   }
 
-  it should "not allow files bigger than allowed size" in {
+  it should "not allow files bigger than allowed size and return appropriate error message" in {
 
     when(validatorMock.validate(any[String])).thenReturn(IngestedFileTooLong.asLeft)
 
@@ -88,7 +88,7 @@ class RoutesSpec extends FlatSpec with Matchers with MockitoSugar {
     response.as[String].unsafeRunSync().rmQuotes shouldBe TextFileNotFound(config.digester.partName).getMessage
   }
 
-  "POST /upload" should "return internal server error if something unexpected occurs" in {
+  it should "return internal server error if something unexpected occurs" in {
 
     when(validatorMock.validate(any[String]))
       .thenReturn(text.asRight)
@@ -99,6 +99,8 @@ class RoutesSpec extends FlatSpec with Matchers with MockitoSugar {
     val request  = buildMultiPartRequest(text.value, uri)
     val response = routes.run(request).value.unsafeRunSync().get
     response.status shouldBe Status.InternalServerError
+
+    verify(validatorMock).validate(text.value)
   }
 
   implicit class stringOps(str: String) {

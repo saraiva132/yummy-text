@@ -1,9 +1,10 @@
 package io.yummy.text.validation
 
+import io.yummy.text.Config.DigesterConfig
 import io.yummy.text.model.IngestedText
 import io.yummy.text.error._
-import cats.implicits._
-import io.yummy.text.Config.DigesterConfig
+import cats.syntax.all._
+import cats.instances.int._
 
 case class Validator(config: DigesterConfig) {
 
