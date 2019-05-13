@@ -4,21 +4,20 @@ import cats.data.EitherT
 import cats.effect.IO
 import cats.instances.string._
 import cats.syntax.all._
-
 import org.http4s.multipart.{Multipart, Part}
 import org.http4s.{HttpRoutes, Request, Response}
 import org.http4s.dsl.Http4sDsl
 import org.http4s.circe._
-
 import io.chrisdavenport.log4cats.Logger
 import io.yummy.text.validation.{ValidationResultT, Validator}
 import io.circe.syntax._
 import io.yummy.text.digester.TextDigester
 import io.yummy.text.error._
 import io.yummy.text.Config.DigesterConfig
-import io.yummy.text.model.{DigestedText}
-
+import io.yummy.text.model.DigestedText
 import fs2.text._
+
+import scala.util.control.NonFatal
 
 case class DigestEndpoint(config: DigesterConfig, validator: Validator, digester: TextDigester)(implicit L: Logger[IO]) extends Http4sDsl[IO] {
 
@@ -43,16 +42,17 @@ case class DigestEndpoint(config: DigesterConfig, validator: Validator, digester
     }
 
   private def processResult(result: ValidationResultT[DigestedText]): IO[Response[IO]] =
-    result.value
-      .flatMap {
-        case Right(digested) =>
+    result
+      .fold(
+        error =>
+          L.warn(s"Failed to process file with error ${error.getMessage}. ") *>
+          BadRequest(error.asJson),
+        digested =>
           L.debug(s"Digested text file with result $digested.") *>
           Ok(digested.asJson)
-        case Left(error) =>
-          L.warn(s"Failed to process file with error ${error.getMessage}. ") *>
-          BadRequest(error.asJson)
-      }
-      .handleErrorWith(_ => InternalServerError("Ops, something went wrong. Try again!"))
+      )
+      .flatten
+      .handleErrorWith { case NonFatal(_) => InternalServerError("Ops, something went wrong. Try again!") }
 
   private def retrieveTextFromRequest(multiPart: Multipart[IO]): ValidationResultT[String] = {
 
