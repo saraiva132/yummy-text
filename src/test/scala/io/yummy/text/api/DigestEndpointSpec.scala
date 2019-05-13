@@ -8,24 +8,29 @@ import io.yummy.text.error._
 import io.yummy.text.model.{DigestedText, IngestedText}
 import io.yummy.text.validation.Validator
 import org.http4s.{Header, Headers, Method, Request, Status, Uri}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import org.scalatest.mockito.MockitoSugar
 import org.http4s.circe._
 import org.http4s.multipart.{Multipart, Part}
 import org.mockito.Mockito._
 import org.mockito.ArgumentMatchers._
 import fs2.Stream
+import io.yummy.text.api.endpoints.DigestEndpoint
 
-class RoutesSpec extends FlatSpec with Matchers with MockitoSugar {
+class DigestEndpointSpec extends FlatSpec with Matchers with MockitoSugar with BeforeAndAfter {
 
   implicit val digestedTextEntityDecoder = jsonOf[IO, DigestedText]
   val textDigesterMock                   = mock[TextDigester]
   val validatorMock                      = mock[Validator]
-  val uri                                = Uri.unsafeFromString("/upload")
+  val uri                                = Uri.unsafeFromString("/digest")
 
-  val routes = Routes(config.digester, validatorMock, textDigesterMock).routes
+  val routes = DigestEndpoint(config.digester, validatorMock, textDigesterMock).routes
 
-  "POST /upload" should "return the number of words and occurrences of each one" in {
+  after {
+    reset(textDigesterMock, validatorMock)
+  }
+
+  "POST /digest" should "return the number of words and occurrences of each one" in {
 
     when(textDigesterMock.digest(any[IngestedText]))
       .thenReturn(IO.pure(digested))

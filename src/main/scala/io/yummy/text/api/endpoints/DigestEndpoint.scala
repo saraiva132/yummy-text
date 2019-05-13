@@ -1,4 +1,4 @@
-package io.yummy.text.api
+package io.yummy.text.api.endpoints
 
 import cats.data.EitherT
 import cats.effect.IO
@@ -20,11 +20,11 @@ import io.yummy.text.model.{DigestedText}
 
 import fs2.text._
 
-case class Routes(config: DigesterConfig, validator: Validator, digester: TextDigester)(implicit L: Logger[IO]) extends Http4sDsl[IO] {
+case class DigestEndpoint(config: DigesterConfig, validator: Validator, digester: TextDigester)(implicit L: Logger[IO]) extends Http4sDsl[IO] {
 
-  def routes: HttpRoutes[IO] =
+  val routes: HttpRoutes[IO] =
     HttpRoutes.of[IO] {
-      case req @ POST -> Root / "upload" =>
+      case req @ POST -> Root / "digest" =>
         processMultiPartRequest(req)
     }
 
@@ -46,9 +46,11 @@ case class Routes(config: DigesterConfig, validator: Validator, digester: TextDi
     result.value
       .flatMap {
         case Right(digested) =>
-          L.debug(s"Digested text file with result $digested.") *> Ok(digested.asJson)
+          L.debug(s"Digested text file with result $digested.") *>
+          Ok(digested.asJson)
         case Left(error) =>
-          L.warn(s"Failed to process file with error ${error.getMessage}. ") *> BadRequest(error.asJson)
+          L.warn(s"Failed to process file with error ${error.getMessage}. ") *>
+          BadRequest(error.asJson)
       }
       .handleErrorWith(_ => InternalServerError("Ops, something went wrong. Try again!"))
 
