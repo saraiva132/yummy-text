@@ -55,6 +55,8 @@ class DigestEndpointSpec extends FlatSpec with Matchers with MockitoSugar with B
     val response = routes.run(request).value.unsafeRunSync().get
     response.status shouldBe Status.BadRequest
     response.as[String].unsafeRunSync().rmQuotes shouldBe IngestedFileIsEmpty.getMessage
+
+    verify(validatorMock).validate(emptyText.value)
   }
 
   it should "not allow files bigger than allowed size and return appropriate error message" in {
@@ -65,6 +67,8 @@ class DigestEndpointSpec extends FlatSpec with Matchers with MockitoSugar with B
     val response = routes.run(request).value.unsafeRunSync().get
     response.status shouldBe Status.BadRequest
     response.as[String].unsafeRunSync().rmQuotes shouldBe IngestedFileTooLong.getMessage
+
+    verify(validatorMock).validate(hugeText.value)
   }
 
   it should "inspect content length and reject if too large" in {
