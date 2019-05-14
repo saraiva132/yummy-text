@@ -1,7 +1,7 @@
 package io.yummy.text.api.endpoints
 
 import cats.data.EitherT
-import cats.effect.IO
+import cats.effect.Sync
 import cats.instances.string._
 import cats.syntax.all._
 import org.http4s.multipart.{Multipart, Part}
@@ -19,29 +19,30 @@ import fs2.text._
 
 import scala.util.control.NonFatal
 
-case class DigestEndpoint(config: DigesterConfig, validator: Validator, digester: TextDigester)(implicit L: Logger[IO]) extends Http4sDsl[IO] {
+case class DigestEndpoint[F[_]](config: DigesterConfig, validator: Validator, digester: TextDigester[F])(implicit F: Sync[F], L: Logger[F])
+    extends Http4sDsl[F] {
 
-  val routes: HttpRoutes[IO] =
-    HttpRoutes.of[IO] {
+  val routes: HttpRoutes[F] =
+    HttpRoutes.of[F] {
       case req @ POST -> Root / "digest" =>
         processMultiPartRequest(req)
     }
 
-  private def processMultiPartRequest(req: Request[IO]): IO[Response[IO]] =
-    req.decode[Multipart[IO]] { m =>
+  private def processMultiPartRequest(req: Request[F]): F[Response[F]] =
+    req.decode[Multipart[F]] { m =>
       val contentLength = req.contentLength.getOrElse(0L)
 
       val result = for {
-        _             <- EitherT.cond[IO](contentLength <= config.fileMaxSize, m, RequestTooLarge)
+        _             <- EitherT.cond[F](contentLength <= config.fileMaxSize, m, RequestTooLarge)
         text          <- retrieveTextFromRequest(m)
-        validatedText <- EitherT.fromEither[IO](validator.validate(text))
-        digested      <- EitherT.liftF[IO, Error, DigestedText](digester.digest(validatedText))
+        validatedText <- EitherT.fromEither[F](validator.validate(text))
+        digested      <- EitherT.liftF[F, Error, DigestedText](digester.digest(validatedText))
       } yield digested
 
       processResult(result)
     }
 
-  private def processResult(result: ValidationResultT[DigestedText]): IO[Response[IO]] =
+  private def processResult(result: ValidationResultT[F, DigestedText]): F[Response[F]] =
     result
       .fold(
         error =>
@@ -54,9 +55,9 @@ case class DigestEndpoint(config: DigesterConfig, validator: Validator, digester
       .flatten
       .handleErrorWith { case NonFatal(_) => InternalServerError("Ops, something went wrong. Try again!") }
 
-  private def retrieveTextFromRequest(multiPart: Multipart[IO]): ValidationResultT[String] = {
+  private def retrieveTextFromRequest(multiPart: Multipart[F]): ValidationResultT[F, String] = {
 
-    def findFileByName(part: Part[IO]): Boolean =
+    def findFileByName(part: Part[F]): Boolean =
       part.name.map(_ === config.partName).getOrElse(false)
 
     multiPart.parts.find(findFileByName) match {

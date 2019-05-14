@@ -20,7 +20,7 @@ import io.yummy.text.api.endpoints.DigestEndpoint
 class DigestEndpointSpec extends FlatSpec with Matchers with MockitoSugar with BeforeAndAfter {
 
   implicit val digestedTextEntityDecoder = jsonOf[IO, DigestedText]
-  val textDigesterMock                   = mock[TextDigester]
+  val textDigesterMock                   = mock[TextDigester[IO]]
   val validatorMock                      = mock[Validator]
   val uri                                = Uri.unsafeFromString("/digest")
 

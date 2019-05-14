@@ -7,7 +7,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class StatusEndpointSpec extends FlatSpec with Matchers {
 
-  val routes = StatusEndpoint().routes
+  val routes = StatusEndpoint[IO]().routes
   val uri    = Uri.unsafeFromString("/status")
 
   "GET /status" should "return OK for an healthy running service" in {

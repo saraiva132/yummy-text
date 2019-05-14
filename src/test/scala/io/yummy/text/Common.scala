@@ -12,7 +12,7 @@ import org.http4s.headers._
 object Common {
 
   implicit val logger = Slf4jLogger.getLoggerFromName[IO]("yummy-text-test")
-  val config          = Config.apply.unsafeRunSync()
+  val config          = Config[IO].unsafeRunSync()
   val file            = scala.io.Source.fromResource("file.txt").mkString
   val text            = IngestedText("this this is is is file words")
   val pollutedText    = IngestedText(",.th§.,.,.is.!\" §<>|%‹^th,+=is$ #is *&&is (is)` {}file[~ ?\'words.")

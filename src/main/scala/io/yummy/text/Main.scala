@@ -16,10 +16,10 @@ object Main extends IOApp {
 
   def run(args: List[String]): IO[ExitCode] =
     for {
-      config     <- Config.apply
-      digester   <- IO(TextDigester())
+      config     <- Config[IO]
+      digester   <- IO(TextDigester[IO]())
       validator  <- IO(Validator(config.digester))
-      api        <- IO(Api(config.digester, validator, digester))
+      api        <- IO(Api[IO](config.digester, validator, digester))
       result     <- BlazeServerBuilder[IO]
         .bindHttp(port = config.server.port, host = config.server.host)
         .withHttpApp(api.routes.orNotFound)

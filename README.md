@@ -2,7 +2,17 @@
 
 #### The ASCII text glutton 
 
-A simple REST API to digest text files:
+### Run tests
+
+`sbt test`
+
+### Run service
+
+`sbt run`
+
+### REST API
+
+A simple REST API with status endpoint and endpoint that digest files
 
 #### `Get /status` 
 
@@ -11,7 +21,14 @@ Fetch service health status
 *Response* 200 Ok
 
 #### `Post /digest`
-Expects a multiPart request with part example: Part("file" -> "File is a text file.")
+
+Expects a HTTP multi-part request with text file to be uploaded in part with part name file
+
+The maximum file size is 10 MBs
+
+Example: 
+
+Header("file" -> "File is a text file.")
 
 *Response* 200 Ok
 
@@ -27,16 +44,10 @@ Expects a multiPart request with part example: Part("file" -> "File is a text fi
 }
 ```
 
-*Error response*
+Error response
 
-`400 BadRequest`
+`400 BadRequest` Body will show string with error message.
 
-Body will show error message.
+`500 InternalServerError` Something really unexpected happened.
 
-### Run tests
 
-`sbt test`
-
-### Run service
-
-`sbt run`
