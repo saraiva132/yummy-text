@@ -13,7 +13,7 @@ Fetch service health status
 #### `Post /digest`
 Expects a multiPart request with part example: Part("file" -> "File is a text file.")
 
-*Response*
+*Response* 200 Ok
 
 ```json
 {
